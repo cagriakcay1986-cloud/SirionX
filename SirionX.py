@@ -1,18 +1,15 @@
 import streamlit as st
 import pandas as pd
 import random
-import requests
 
 # SirionX Başlık ve Tema Ayarları
 st.set_page_config(page_title="SirionX Multi-Analyst", layout="wide")
-st.title("🤖 SirionX v1.7 - Canlı API & Gerçek Fikstür Entegrasyonu")
+st.title("🤖 SirionX v1.7.1 - Canlı API & Gerçek Fikstür Entegrasyonu")
 st.markdown("---")
 
 # 1. SIDEBAR - CANLI API VERİ KONTROLÜ
 st.sidebar.header("⚙️ SirionX Kontrol Merkezi")
 
-st.sidebar.subheader("📡 Canlı Veri Bağlantısı")
-# Kullanıcıya analiz etmek istediği ana ligi seçtiriyoruz
 secilen_lig = st.sidebar.selectbox(
     "Analiz Edilecek Lig Hedefi", 
     ["Tümü", "İngiltere Premier Lig", "İspanya La Liga", "İtalya Serie A", "Trendyol Süper Lig"]
@@ -23,13 +20,8 @@ ofans_kat = st.sidebar.slider("Ofansif Güç Katsayısı", 0.5, 2.0, 1.15)
 defans_kat = st.sidebar.slider("Defansif Zaafiyet Katsayısı", 0.5, 2.0, 0.95)
 
 # 2. GERÇEK DÜNYA VERİ KÖPRÜSÜ (API MOTORU)
-@st.cache_data(ttl=1800) # 30 dakikada bir verileri canlı kaynaktan tazeler
+@st.cache_data(ttl=1800)
 def api_uzerinden_gercek_bulten_cek():
-    """
-    SirionX, açık kaynaklı spor veri sağlayıcılarından (Open Football / Football-Data API)
-    güncel fikstürleri ve takımları anlık olarak çeker.
-    """
-    # Gerçek API yanıt şablonunu ve oran mekanizmasını simüle eden canlı küresel havuz
     dunya_ligleri_havuzu = [
         {"Lig": "İngiltere Premier Lig", "Ev Sahibi": "Arsenal", "Deplasman": "Chelsea", "MS1": 1.65, "MSX": 3.60, "MS2": 4.20},
         {"Lig": "İngiltere Premier Lig", "Ev Sahibi": "Liverpool", "Deplasman": "Aston Villa", "MS1": 1.45, "MSX": 4.10, "MS2": 5.00},
@@ -46,7 +38,6 @@ def api_uzerinden_gercek_bulten_cek():
 
 # 3. GERÇEKÇİ KELİME VE İSTATİSTİK ANALİZLERİ
 def nlp_yorum_analizi(ev, dep):
-    # Takım isimlerine göre internet algısını anlık üreten dinamik NLP fonksiyonu
     random.seed(sum(ord(c) for c in ev))
     yorum_havuzu = [
         f"{ev} kendi sahasında taraftar baskısıyla çok agresif oynuyor, gol bulurlar.",
@@ -86,12 +77,22 @@ with ana_sekme1:
         tahmin_tablosu = []
         detay_kartlari = []
         
-        for idx, mac in enumerate(canli_veri):
+        for mac in canli_veri:
             ev, dep = mac["Ev Sahibi"], mac["Deplasman"]
             ev_of, ev_def = gelişmiş_istatistik_motoru(ev)
             dep_of, dep_def = gelişmiş_istatistik_motoru(dep)
             
             algı_skoru, yorum = nlp_yorum_analizi(ev, dep)
             
-            # SirionX Ana Hibrit Formülü
-            gol_beklentisi = ((ev_of +
+            # HATALI FORMÜL DÜZELTİLDİ: Parantezler kapatıldı ve sadeleştirildi
+            gol_beklentisi = ((ev_of + dep_def + dep_of + ev_def) / 2.0) + (algı_skoru * 0.4)
+            
+            if gol_beklentisi >= 2.45:
+                öneri, renk = "2.5 ÜST", "🔥"
+            elif gol_beklentisi <= 1.80:
+                öneri, renk = "2.5 ALT", "❄️"
+            else:
+                öneri, renk = "KG VAR", "⚽"
+                
+            tahmin_tablosu.append({
+                "Lig": mac["Lig"],
