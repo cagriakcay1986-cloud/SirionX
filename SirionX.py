@@ -96,3 +96,24 @@ with ana_sekme1:
                 
             tahmin_tablosu.append({
                 "Lig": mac["Lig"],
+                "Karşılaşma": f"{ev} - {dep}",
+                "İddaa Oranları (1-X-2)": f"{mac['MS1']} | {mac['MSX']} | {mac['MS2']}",
+                "SirionX Gol Beklentisi": round(max(0, gol_beklentisi), 2),
+                "Yapay Zekâ Resmi Önerisi": f"{renk} {öneri}"
+            })
+            
+            detay_kartlari.append((f"{ev} - {dep}", yorum, algı_skoru))
+            
+        st.dataframe(pd.DataFrame(tahmin_tablosu), use_container_width=True)
+        
+        st.markdown("---")
+        st.subheader("📝 Maç Başına İnternet Duygu ve Algı İncelemesi")
+        for baslik, icerik, skor in detay_kartlari:
+            with st.expander(f"🔍 {baslik} | Algı Skoru: {skor}"):
+                st.write(f"**Cımbızlanan İnternet Yorumu:** {icerik}")
+                st.progress(max(0.0, min(1.0, (skor + 1) / 2)))
+
+with ana_sekme2:
+    st.subheader("📊 Küresel ve Yerel Borsa Endeks Analizi")
+with ana_sekme3:
+    st.subheader("🪙 Kripto Para Döngü Kontrol Paneli")
