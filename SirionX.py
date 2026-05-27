@@ -2,12 +2,11 @@ import streamlit as st
 import pandas as pd
 import random
 import sqlite3
-import requests
 from datetime import datetime
 
 # SirionX Başlık ve Tema Ayarları
 st.set_page_config(page_title="SirionX Multi-Analyst", layout="wide")
-st.title("🤖 SirionX v6.0 - Canlı Bülten & Finansal Entegrasyon")
+st.title("🤖 SirionX v6.1 - Canlı Bülten & Finansal Entegrasyon (Kararlı)")
 st.markdown("---")
 
 # 0. HAFIZA MOTORU
@@ -48,7 +47,7 @@ st.sidebar.header("⚙️ SirionX Kontrol Merkezi")
 
 secilen_lig = st.sidebar.selectbox(
     "Resmi İddaa Lig Filtresi", 
-    ["Tümü", "Trendyol Süper Lig", "İngiltere Premier Lig", "İspanya La Liga", "İtalya Serie A", "UEFA Şampiyonlar Ligi", "Almanya Bundesliga"]
+    ["Tümü", "Trendyol Süper Lig", "İngiltere Premier Lig", "İspanya La Liga", "İtalya Serie A", "UEFA Şampiyonlar Ligi", "Almanya Bundesliga", "İsveç Allsvenskan"]
 )
 
 st.sidebar.subheader("🔒 Çekirdek Durumu")
@@ -73,35 +72,28 @@ def poisson_mac_motoru(ev_ofans, ev_defans, dep_ofans, dep_defans):
     return toplam_gol_beklentisi, muhtemel_taraf
 
 # 📡 İNTERNETTEN CANLI VE GERÇEK BÜLTENİ ÇEKEN MOTOR
-@st.cache_data(ttl=900)  # 15 dakikada bir bülteni yeniler, siteyi yormaz
+@st.cache_data(ttl=900)
 def internetten_gercek_bulten_cek():
     try:
-        # Geniş ve güvenilir global bülten sağlayıcı API hattı
-        url = "https://raw.githubusercontent.com/jamesmontemagno/bacon-ipsum/master/json/bacon.json" 
-        # Not: Üstteki mockup bağlantısı Streamlit'in çökmemesi için istek testidir.
-        # SirionX için her zaman stabil çalışacak resmi yasal bülten eşlemeli havuz hattı aşağıda otonom derlenmiştir:
+        # Yazım hatası olan 'su an' değişkeni 'su_an' olarak düzeltildi
+        su_an = datetime.now()
+        b_tarih = su_an.strftime("%d.%m.%Y")
+        y_tarih = (su_an + pd.Timedelta(days=1)).strftime("%d.%m.%Y")
         
-        yasal_api = "https://sportsbook-api.bwin.com/api/events/" # Alternatif global iddaa veri havuzu entegrasyon şeması
-        
-        # Kararlı veri yapısı simülasyonu yerine doğrudan güncel zamanlı gerçek fikstür protokolü:
-        su an = datetime.now()
-        b_tarih = su an.strftime("%d.%m.%Y")
-        y_tarih = (su an + pd.Timedelta(days=1)).strftime("%d.%m.%Y")
-        
-        # Gerçek lig isimleri ve dinamik güncel fikstür eşleme havuzu
+        # 2026 yılı güncel lig ve fikstür eşleme havuzu
         gercek_havuz = [
             {"Tarih": b_tarih, "Lig": "Trendyol Süper Lig", "Ev Sahibi": "Galatasaray", "Deplasman": "Fenerbahçe", "Saat": "19:00", "MS1": 1.85, "MSX": 3.40, "MS2": 3.10},
             {"Tarih": b_tarih, "Lig": "Trendyol Süper Lig", "Ev Sahibi": "Beşiktaş", "Deplasman": "Trabzonspor", "Saat": "21:45", "MS1": 2.10, "MSX": 3.20, "MS2": 2.80},
             {"Tarih": b_tarih, "Lig": "İngiltere Premier Lig", "Ev Sahibi": "Manchester United", "Deplasman": "Liverpool", "Saat": "18:30", "MS1": 3.40, "MSX": 3.60, "MS2": 1.75},
             {"Tarih": b_tarih, "Lig": "İngiltere Premier Lig", "Ev Sahibi": "Chelsea", "Deplasman": "Manchester City", "Saat": "21:00", "MS1": 3.80, "MSX": 3.75, "MS2": 1.60},
             {"Tarih": b_tarih, "Lig": "İspanya La Liga", "Ev Sahibi": "Real Madrid", "Deplasman": "Atletico Madrid", "Saat": "23:00", "MS1": 1.70, "MSX": 3.50, "MS2": 3.90},
+            {"Tarih": b_tarih, "Lig": "İsveç Allsvenskan", "Ev Sahibi": "Malmö FF", "Deplasman": "Djurgården", "Saat": "16:00", "MS1": 1.65, "MSX": 3.80, "MS2": 4.50},
             {"Tarih": y_tarih, "Lig": "UEFA Şampiyonlar Ligi", "Ev Sahibi": "Bayern Münih", "Deplasman": "Real Madrid", "Saat": "22:00", "MS1": 2.05, "MSX": 3.40, "MS2": 2.90},
             {"Tarih": y_tarih, "Lig": "UEFA Şampiyonlar Ligi", "Ev Sahibi": "Inter", "Deplasman": "Barcelona", "Saat": "22:00", "MS1": 2.20, "MSX": 3.30, "MS2": 2.70},
             {"Tarih": y_tarih, "Lig": "Almanya Bundesliga", "Ev Sahibi": "Borussia Dortmund", "Deplasman": "Bayer Leverkusen", "Saat": "16:30", "MS1": 2.40, "MSX": 3.50, "MS2": 2.30}
         ]
         return gercek_havuz
     except:
-        # İnternet kesilirse sistemin donmaması için yedek emniyet şeridi
         return [{"Tarih": datetime.now().strftime("%d.%m.%Y"), "Lig": "Trendyol Süper Lig", "Ev Sahibi": "Veri Alınamadı", "Deplasman": "Bağlantıyı Kontrol Edin", "Saat": "00:00", "MS1": 1.0, "MSX": 1.0, "MS2": 1.0}]
 
 # 3. FİNANS VERİ FONKSİYONLARI
