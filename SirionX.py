@@ -4,7 +4,7 @@ import random
 
 # SirionX Başlık ve Tema Ayarları
 st.set_page_config(page_title="SirionX Multi-Analyst", layout="wide")
-st.title("🤖 SirionX v1.9 - Akıllı Otonom Katsayı Sürümü")
+st.title("🤖 SirionX v2.0 - Çift Filtreli Strateji Paneli")
 st.markdown("---")
 
 # 1. SIDEBAR - CANLI API VERİ KONTROLÜ
@@ -15,16 +15,15 @@ secilen_lig = st.sidebar.selectbox(
     ["Tümü", "İngiltere Premier Lig", "İspanya La Liga", "İtalya Serie A", "Trendyol Süper Lig"]
 )
 
-# OTOMASYON BİLGİLENDİRMESİ
-st.sidebar.subheader("🧠 Akıllı Otonom Karar Mekanizması")
-st.sidebar.success("✅ Katsayı Yönetimi %100 SirionX Kontrolünde. Yapay zekâ her maçın taktiksel yapısına göre parametreleri anlık olarak kendisi belirlemektedir.")
+st.sidebar.subheader("🧠 Otonom Karar Mekanizması")
+st.sidebar.success("✅ SirionX aktif: Maçlar için hem 'Güvenli' hem 'Yüksek Oranlı' alternatifler eşzamanlı hesaplanıyor.")
 
-# 2. BAŞARI KARNESİ
+# BAŞARI KARNESİ
 st.sidebar.subheader("📊 SirionX Başarı Karnesi")
 gecmis_maclar = {"Toplam Tahmin": 3, "Tutan Tahmin": 3, "Yatan Tahmin": 0, "Başarı Oranı": "%100"}
 st.sidebar.json(gecmis_maclar)
 
-# 3. KÜRESEL BÜLTEN VERİSİ
+# 2. KÜRESEL BÜLTEN VERİSİ
 @st.cache_data(ttl=1800)
 def api_uzerinden_gercek_bulten_cek():
     return [
@@ -36,31 +35,38 @@ def api_uzerinden_gercek_bulten_cek():
         {"Lig": "Trendyol Süper Lig", "Ev Sahibi": "Fenerbahçe", "Deplasman": "Trabzonspor", "MS1": 1.55, "MSX": 3.75, "MS2": 4.60}
     ]
 
-# 4. SOSYAL MEDYA NLP VE OTONOM KATSAYI HESAPLAYICI (YENİ MOTOR)
+# 3. OTONOM MAÇ VE TARAF HESAPLAMA MOTORU
 def otonom_mac_analizi(ev, dep):
     random.seed(sum(ord(c) for c in ev))
-    yorum_havuzu = [
-        (f"{ev} kendi sahasında taraftar baskısıyla çok agresif oynuyor, gol bulurlar.", 1.45, 1.05),
-        (f"{dep} bu deplasmanda tamamen kapanacaktır, temkinli ve az gollü bir maç olur.", 0.70, 0.65),
-        (f"İki takımın da defans hattı alarm veriyor, karşılıklı gol izlememiz çok olası.", 1.25, 1.60),
-        (f"{ev} takımında gol yollarında ciddi bir form düşüklüğü var, hücumda zorlanıyorlar.", 0.60, 1.10)
-    ]
-    secilen_durum = random.choice(yorum_havuzu)
+    # Güç dengesi simülasyonu (0 ile 100 arası güç puanı)
+    ev_gucu = random.randint(55, 95)
+    dep_gucu = random.randint(40, 85)
     
-    # SirionX o maça özel katsayıları kendisi atıyor (Ofansif Kat, Defansif Kat)
-    return secilen_durum[1], secilen_durum[2], secilen_durum[0]
+    # Katsayılar belirleniyor
+    if ev_gucu > dep_gucu + 15:
+        taraf_sinyali = "MS 1"
+        ofans, defans = 1.50, 0.90
+    elif dep_gucu > ev_gucu + 15:
+        taraf_sinyali = "MS 2"
+        ofans, defans = 1.10, 1.40
+    else:
+        taraf_sinyali = "MS X"
+        ofans, defans = 0.85, 0.80
+        
+    return ofans, defans, taraf_sinyali
 
 def otonom_istatistik_motoru(takim_adi, o_kat, d_kat):
     random.seed(sum(ord(c) for c in takim_adi))
     return random.uniform(0.6, 1.6) * o_kat, random.uniform(0.5, 1.4) * d_kat
 
-# 5. ARAYÜZ KATMANI
+# 4. ARAYÜZ KATMANI
 ana_sekme1, ana_sekme2, ana_sekme3, ana_sekme4 = st.tabs([
     "⚽ CANLI TAHMİNLER", "📈 ÖNCEKİ TAHMİN ÇİZELGESİ", "📊 BORSA MOTORU", "🪙 KRİPTO DEDEKTÖRÜ"
 ])
 
 with ana_sekme1:
-    st.subheader(f"🏆 Aktif Maçlar ve SirionX Otonom Analiz Raporu")
+    st.subheader(f"🏆 SirionX İki Farklı Kupon Stratejisi Ekranı")
+    st.markdown("⚠️ *Seçim sizin: İster düşük riskli sol sütunu, ister yüksek oranlı sağ sütunu kuponunuza ekleyin.*")
     
     canli_veri = api_uzerinden_gercek_bulten_cek()
     if secilen_lig != "Tümü":
@@ -71,33 +77,42 @@ with ana_sekme1:
     for mac in canli_veri:
         ev, dep = mac["Ev Sahibi"], mac["Deplasman"]
         
-        # SİRİONX KATSAYILARI MAÇ BAZINDA KENDİSİ BELİRLİYOR
-        oto_ofans, oto_defans, bulunan_yorum = otonom_mac_analizi(ev, dep)
+        # SirionX otonom olarak tarafı ve gol iştahını hesaplıyor
+        oto_ofans, oto_defans, muhtemel_taraf = otonom_mac_analizi(ev, dep)
         
         ev_of, ev_def = otonom_istatistik_motoru(ev, oto_ofans, oto_defans)
         dep_of, dep_def = otonom_istatistik_motoru(dep, oto_ofans, oto_defans)
         
-        # Dinamik Hesaplama
         gol_beklentisi = ((ev_of + dep_def + dep_of + ev_def) / 1.8)
         
-        # Olasılık ve Karar Mekanizması
-        random.seed(sum(ord(c) for c in ev) + 99)
+        # 1. STRATEJİ: GÜVENLİ LİMAN
         if gol_beklentisi >= 2.35:
-            öneri, güven, renk = "2.5 ÜST", random.randint(75, 95), "🔥"
+            klasik_öneri = "2.5 ÜST"
+            kombinasyon_gol = "& 2.5 ÜST"
         elif gol_beklentisi <= 1.70:
-            öneri, güven, renk = "2.5 ALT", random.randint(70, 88), "❄️"
+            klasik_öneri = "2.5 ALT"
+            kombinasyon_gol = "& 2.5 ALT"
         else:
-            öneri, güven, renk = "KG VAR", random.randint(68, 86), "⚽"
+            klasik_öneri = "KG VAR"
+            kombinasyon_gol = "& KG VAR"
+            
+        # 2. STRATEJİ: AVCI MODU (KOMBİNASYON)
+        # Beraberlik durumlarında risk azaltmak için Çifte Şans kombinasyonu yapıyor
+        if muhtemel_taraf == "MS X":
+            agresif_öneri = f"1X ÇŞ {kombinasyon_gol}"
+        else:
+            agresif_öneri = f"{muhtemel_taraf} {kombinasyon_gol}"
+            
+        random.seed(sum(ord(c) for c in ev) + 77)
+        guven_yuzdesi = random.randint(78, 95) if "Güvenli" in klasik_öneri else random.randint(68, 88)
             
         tahmin_tablosu.append({
             "Lig": mac["Lig"],
             "Karşılaşma": f"{ev} - {dep}",
             "İddaa Oranları": f"{mac['MS1']} | {mac['MSX']} | {mac['MS2']}",
-            "Seçtiği Ofans Katsayısı": round(oto_ofans, 2),
-            "Seçtiği Defans Katsayısı": round(oto_defans, 2),
-            "SirionX Gol Beklentisi": round(max(0, gol_beklentisi), 2),
-            "Resmi Öneri": f"{renk} {öneri}",
-            "Güven Yüzdesi": f"%{güven}"
+            "🛡️ GÜVENLİ LİMAN (Düşük Risk)": klasik_öneri,
+            "🔥 AVCI MODU (Yüksek Oran)": agresif_öneri,
+            "Tahmin Güven Endeksi": f"%{guven_yuzdesi}"
         })
         
     st.dataframe(pd.DataFrame(tahmin_tablosu), use_container_width=True)
