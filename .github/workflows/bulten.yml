@@ -1,8 +1,6 @@
 name: Gunluk Bulten Cekici
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 7 * * *'
 
 jobs:
   build:
@@ -15,7 +13,7 @@ jobs:
           python-version: '3.9'
       - name: Paketleri Kur
         run: |
-          pip install pandas requests playwright
+          pip install pandas requests beautifulsoup4 playwright
           playwright install chromium
       - name: Bülteni Çek
         run: python SirionX.py
@@ -23,6 +21,6 @@ jobs:
         run: |
           git config --global user.name "SirionX-Bot"
           git config --global user.email "bot@sirionx.com"
-          git add maclar.csv || echo "Dosya bulunamadı"
+          git add maclar.csv
           git commit -m "Bulten guncellendi" || echo "Degisiklik yok"
           git push
