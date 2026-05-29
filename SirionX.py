@@ -1,19 +1,29 @@
 import streamlit as st
 import pandas as pd
+import requests
 
 st.set_page_config(page_title="SirionX Ultimate", layout="wide")
-st.title("🧠 SirionX - Analitik Terminal")
+st.title("🧠 SirionX - Analitik Terminal (Final)")
 
-# Kütüphaneyi güvenli bir şekilde çağır
-try:
-    from playwright.sync_api import sync_playwright
-    PLAYWRIGHT_READY = True
-except ImportError:
-    PLAYWRIGHT_READY = False
+# Hata yutucu veri çekme fonksiyonu
+def veri_cek():
+    try:
+        # Doğrudan engelsiz veri kaynağı
+        url = "https://www.scorebat.com/video-api/v3/"
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            return response.json().get('response', [])
+        return None
+    except:
+        return None
 
 if st.button("Sistemi Başlat"):
-    if not PLAYWRIGHT_READY:
-        st.error("❌ Altyapı Hatası: Gerekli kütüphaneler sunucuya yüklenemedi. 'requirements.txt' dosyanı kontrol et.")
-    else:
-        st.success("✅ Altyapı Hazır! Veri hattı kuruluyor...")
-        # Veri çekme motorun burada tetiklenecek
+    with st.spinner("Veri hattı kuruluyor..."):
+        data = veri_cek()
+        if data:
+            st.success("✅ Veri Akışı Başarılı!")
+            df = pd.DataFrame(data)
+            # İsteğe göre tahmin motorunu buraya bağlayacağız
+            st.table(df[['title', 'competition', 'date']])
+        else:
+            st.error("❌ Veri hattına ulaşılamadı. Lütfen sunucu durumunu kontrol et.")
