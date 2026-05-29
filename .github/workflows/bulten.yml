@@ -1,25 +1,26 @@
-name: Otonom Bülten Çekici
+name: Gunluk Bulten Cekici
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 7 * * *' # UTC 07:00, Türkiye saati ile 10:00
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Python Kur
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       - name: Paketleri Kur
         run: pip install pandas requests beautifulsoup4
       - name: Bülteni Çek
         run: python SirionX.py
-      - name: Veriyi Kaydet
+      - name: Değişiklikleri Kaydet
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add maclar.csv
-          git commit -m "Gunluk bulten guncellendi"
+          git config --global user.name "SirionX-Bot"
+          git config --global user.email "bot@sirionx.com"
+          git add maclar.csv || echo "Dosya yok"
+          git commit -m "Bulten guncellendi" || echo "Degisiklik yok"
           git push
