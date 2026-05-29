@@ -2,19 +2,21 @@ import streamlit as st
 import pandas as pd
 import os
 
-st.set_page_config(page_title="SirionX Maç Bülteni", layout="wide")
+st.title("⚽ SirionX - Analiz Terminali")
 
-st.title("⚽ SirionX - Güncel Maç Bülteni")
+# Dosya yolunu kesinleştir
+csv_yolu = "maclar.csv"
 
-# CSV dosyasının varlığını kontrol et
-if os.path.exists("maclar.csv"):
-    df = pd.read_csv("maclar.csv")
-    
-    # Tabloyu şık bir şekilde göster
-    st.dataframe(df, use_container_width=True)
-    
-    # İstersen veriyi indirme butonu ekle
-    csv = df.to_csv(index=False).encode('utf-8')
-    st.download_button("CSV Olarak İndir", csv, "maclar.csv", "text/csv")
+if os.path.exists(csv_yolu):
+    try:
+        df = pd.read_csv(csv_yolu)
+        if not df.empty:
+            st.write("Veri Başarıyla Yüklendi:")
+            st.table(df)
+        else:
+            st.warning("CSV dosyası mevcut ama içinde veri yok!")
+    except Exception as e:
+        st.error(f"Dosya okuma hatası: {e}")
 else:
-    st.warning("Veri henüz çekilmedi. Lütfen GitHub Actions'ı çalıştır.")
+    st.error(f"Dosya bulunamadı: {os.path.abspath(csv_yolu)}")
+    st.write("Depodaki dosyalar:", os.listdir('.'))
