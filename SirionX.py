@@ -1,29 +1,37 @@
 import streamlit as st
 import pandas as pd
-import requests
+import sqlite3
 
-st.set_page_config(page_title="SirionX Ultimate", layout="wide")
-st.title("🧠 SirionX - Analitik Terminal (Final)")
+st.title("🧠 SirionX - Canlı Analitik Terminal")
 
-# Hata yutucu veri çekme fonksiyonu
-def veri_cek():
-    try:
-        # Doğrudan engelsiz veri kaynağı
-        url = "https://www.scorebat.com/video-api/v3/"
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            return response.json().get('response', [])
-        return None
-    except:
-        return None
+# 1. Kendi Veritabanını Oluştur
+def veritabanini_kur():
+    conn = sqlite3.connect("sirionx_data.db")
+    # Eğer tablon yoksa oluştur
+    conn.execute("CREATE TABLE IF NOT EXISTS maclar (tarih TEXT, ev_sahibi TEXT, deplasman TEXT, tahmin TEXT)")
+    conn.commit()
+    conn.close()
 
-if st.button("Sistemi Başlat"):
-    with st.spinner("Veri hattı kuruluyor..."):
-        data = veri_cek()
-        if data:
-            st.success("✅ Veri Akışı Başarılı!")
-            df = pd.DataFrame(data)
-            # İsteğe göre tahmin motorunu buraya bağlayacağız
-            st.table(df[['title', 'competition', 'date']])
-        else:
-            st.error("❌ Veri hattına ulaşılamadı. Lütfen sunucu durumunu kontrol et.")
+# 2. Veri Ekleme Paneli (Artık veriyi sen elle veya bir txt dosyasıyla sisteme "enjekte" edeceksin)
+with st.expander("📊 Yeni Maç Verisi Ekle"):
+    ev = st.text_input("Ev Sahibi")
+    dep = st.text_input("Deplasman")
+    if st.button("Veritabanına Kaydet"):
+        conn = sqlite3.connect("sirionx_data.db")
+        conn.execute("INSERT INTO maclar (ev_sahibi, deplasman) VALUES (?, ?)", (ev, dep))
+        conn.commit()
+        conn.close()
+        st.success("Veri sisteme enjekte edildi!")
+
+# 3. Poisson Analiz Motorunu Çalıştır
+if st.button("Sistemi Başlat (Tahminleri Gör)"):
+    conn = sqlite3.connect("sirionx_data.db")
+    df = pd.read_sql("SELECT * FROM maclar", conn)
+    conn.close()
+    
+    if not df.empty:
+        st.write("Analiz ediliyor...")
+        # Burada Poisson formülünü df üzerindeki ev/dep takımlarına uygularız
+        st.table(df)
+    else:
+        st.info("Veritabanı boş, lütfen maç verisi ekle.")
