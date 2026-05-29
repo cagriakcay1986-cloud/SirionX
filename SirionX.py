@@ -1,27 +1,30 @@
 import pandas as pd
-import random
+import numpy as np
+import requests
+from bs4 import BeautifulSoup
 
-def analiz_motoru(mac_adi):
-    # BURASI GELİŞTİRİLECEK: 
-    # Buraya geçmiş maç sonuçlarını (CSV/Excel) okuyup 
-    # Poisson dağılımı uygulayan kodunu ekleyeceğiz.
-    # Şimdilik prototip olarak:
-    olasilik = random.uniform(60, 95) 
-    return round(olasilik, 2)
+# 1. VERİ ÇEKME (Scraping)
+def bulten_cek():
+    url = "https://www.iddaa.com/program/canli/futbol"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    # Maç isimlerini al
+    maclar = [{"mac": m.text.strip()} for m in soup.select(".match-name")]
+    
+    df = pd.DataFrame(maclar)
+    df.to_csv("maclar.csv", index=False)
+    return df
 
-def main():
-    try:
-        # 1. Adım: Veriyi oku
-        df = pd.read_csv("maclar.csv")
-        
-        # 2. Adım: Analiz et
-        df['Tahmin_Olasilik'] = df['mac'].apply(analiz_motoru)
-        
-        # 3. Adım: Sonucu kaydet
-        df.to_csv("tahminler.csv", index=False)
-        print("Analiz motoru başarıyla çalıştı.")
-    except Exception as e:
-        print(f"Analiz hatası: {e}")
+# 2. ANALİZ MOTORU
+def analiz_et(df):
+    # Burada "Gerçek Veri" ile Poisson veya istatistiksel ağırlıklandırma yapacağız
+    # Şimdilik prototip olarak rastgele bir olasılık atıyoruz
+    df['Tahmin_Olasilik'] = np.random.uniform(60, 95, size=len(df)).round(2)
+    df.to_csv("tahminler.csv", index=False)
+    print("Analiz tamamlandı!")
 
 if __name__ == "__main__":
-    main()
+    df = bulten_cek()
+    analiz_et(df)
