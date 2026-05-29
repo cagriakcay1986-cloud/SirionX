@@ -1,30 +1,26 @@
 import streamlit as st
-import pandas as pd
 import requests
-from bs4 import BeautifulSoup
+import pandas as pd
 
-st.title("🧠 SirionX - Veri Hattı Dedektörü")
+st.title("⚽ SirionX - Veri Dedektörü")
 
-def verileri_tazele():
+# API Anahtarlarını buraya gir
+API_KEY = "buraya_kendi_anahtarini_yapistir"
+HEADERS = {
+    "x-rapidapi-key": API_KEY,
+    "x-rapidapi-host": "api-football-v1.p.rapidapi.com"
+}
+
+def veri_test_et():
+    url = "https://api-football-v1.p.rapidapi.com/v3/fixtures"
+    querystring = {"live": "all"}
     try:
-        # İddaa bültenini doğrudan çekmek yerine daha genel bir spor kaynağı kullanalım
-        url = "https://www.mackolik.com/canli-sonuclar" # Alternatif en güvenilir kaynak
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        response = requests.get(url, headers=headers)
-        
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.text, 'html.parser')
-            # Maç isimlerini çeken genel bir seçici
-            maclar = soup.find_all(class_='match-name') 
-            if maclar:
-                for m in maclar[:5]: # İlk 5 maçı göster
-                    st.write(f"✅ Bulunan Maç: {m.text.strip()}")
-            else:
-                st.warning("Sayfa yüklendi ama maç listesine ulaşılamadı. HTML yapısı değişmiş olabilir.")
-        else:
-            st.error(f"Bağlantı hatası: {response.status_code}")
+        response = requests.get(url, headers=HEADERS, params=querystring)
+        return response.json()
     except Exception as e:
-        st.error(f"Kritik Hata: {e}")
+        return f"Hata: {e}"
 
-if st.button("Veri Hattını Zorla"):
-    verileri_tazele()
+if st.button("Veriyi Analiz Et"):
+    data = veri_test_et()
+    # Gelen ham veriyi ekranda görerek yapıyı teşhis edelim
+    st.json(data)
