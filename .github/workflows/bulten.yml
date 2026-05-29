@@ -1,27 +1,47 @@
 name: Gunluk Bulten Cekici
+
 on:
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
+
       - name: Python Kur
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+
       - name: Paketleri Kur
-        run: pip install pandas requests beautifulsoup4
-      - name: Bülteni Çek
-        run: python SirionX.py
-      - name: Değişiklikleri Kaydet
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add maclar.csv || echo "Dosya yok"
+          pip install pandas requests beautifulsoup4
+
+      - name: Dosyalari Listele
+        run: ls -la
+
+      - name: Python Scripti Çalıştır
+        run: python SirionX.py
+
+      - name: Git Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add .
+
+          git status
+
           git commit -m "Bulten guncellendi" || echo "Degisiklik yok"
+
           git push
