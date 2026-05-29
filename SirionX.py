@@ -1,37 +1,21 @@
 import streamlit as st
+import requests
 import pandas as pd
-import sqlite3
+from bs4 import BeautifulSoup
 
-st.title("🧠 SirionX - Canlı Analitik Terminal")
+st.title("🧠 SirionX - Otonom Analitik")
 
-# 1. Kendi Veritabanını Oluştur
-def veritabanini_kur():
-    conn = sqlite3.connect("sirionx_data.db")
-    # Eğer tablon yoksa oluştur
-    conn.execute("CREATE TABLE IF NOT EXISTS maclar (tarih TEXT, ev_sahibi TEXT, deplasman TEXT, tahmin TEXT)")
-    conn.commit()
-    conn.close()
+def bulten_cek():
+    try:
+        url = "https://www.iddaa.com/program/canli/futbol"
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        response = requests.get(url, headers=headers, timeout=10)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Veri çekme mantığın buraya gelecek
+        st.write("Veri hattı aktif.")
+    except Exception as e:
+        st.error(f"Hata: {e}")
 
-# 2. Veri Ekleme Paneli (Artık veriyi sen elle veya bir txt dosyasıyla sisteme "enjekte" edeceksin)
-with st.expander("📊 Yeni Maç Verisi Ekle"):
-    ev = st.text_input("Ev Sahibi")
-    dep = st.text_input("Deplasman")
-    if st.button("Veritabanına Kaydet"):
-        conn = sqlite3.connect("sirionx_data.db")
-        conn.execute("INSERT INTO maclar (ev_sahibi, deplasman) VALUES (?, ?)", (ev, dep))
-        conn.commit()
-        conn.close()
-        st.success("Veri sisteme enjekte edildi!")
-
-# 3. Poisson Analiz Motorunu Çalıştır
-if st.button("Sistemi Başlat (Tahminleri Gör)"):
-    conn = sqlite3.connect("sirionx_data.db")
-    df = pd.read_sql("SELECT * FROM maclar", conn)
-    conn.close()
-    
-    if not df.empty:
-        st.write("Analiz ediliyor...")
-        # Burada Poisson formülünü df üzerindeki ev/dep takımlarına uygularız
-        st.table(df)
-    else:
-        st.info("Veritabanı boş, lütfen maç verisi ekle.")
+if st.button("Sistemi Senkronize Et"):
+    bulten_cek()
