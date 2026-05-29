@@ -1,43 +1,27 @@
 import pandas as pd
-import requests
-from bs4 import BeautifulSoup
-from datetime import datetime
+import random
 
-def bulten_cek():
+def analiz_motoru(mac_adi):
+    # BURASI GELİŞTİRİLECEK: 
+    # Buraya geçmiş maç sonuçlarını (CSV/Excel) okuyup 
+    # Poisson dağılımı uygulayan kodunu ekleyeceğiz.
+    # Şimdilik prototip olarak:
+    olasilik = random.uniform(60, 95) 
+    return round(olasilik, 2)
 
-    url = "https://www.iddaa.com/program/canli/futbol"
-
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
-
-    response = requests.get(url, headers=headers, timeout=30)
-
-    soup = BeautifulSoup(response.text, "html.parser")
-
-    maclar = []
-
-    for m in soup.select(".match-name"):
-
-        mac_adi = m.get_text(strip=True)
-
-        analiz = {
-            "mac": mac_adi,
-            "cekim_tarihi": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "analiz_notu": "Analiz bekleniyor"
-        }
-
-        maclar.append(analiz)
-
-    if len(maclar) == 0:
-        print("Maç bulunamadı. Site yapısı değişmiş olabilir.")
-        return
-
-    df = pd.DataFrame(maclar)
-
-    df.to_csv("maclar.csv", index=False, encoding="utf-8-sig")
-
-    print(f"{len(df)} maç kaydedildi.")
+def main():
+    try:
+        # 1. Adım: Veriyi oku
+        df = pd.read_csv("maclar.csv")
+        
+        # 2. Adım: Analiz et
+        df['Tahmin_Olasilik'] = df['mac'].apply(analiz_motoru)
+        
+        # 3. Adım: Sonucu kaydet
+        df.to_csv("tahminler.csv", index=False)
+        print("Analiz motoru başarıyla çalıştı.")
+    except Exception as e:
+        print(f"Analiz hatası: {e}")
 
 if __name__ == "__main__":
-    bulten_cek()
+    main()
