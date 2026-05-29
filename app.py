@@ -4,19 +4,16 @@ import os
 
 st.title("⚽ SirionX - Analiz Terminali")
 
-# Dosya yolunu kesinleştir
-csv_yolu = "maclar.csv"
+# Dosyanın olduğu klasörü belirt
+file_path = os.path.join(os.getcwd(), "maclar.csv")
 
-if os.path.exists(csv_yolu):
-    try:
-        df = pd.read_csv(csv_yolu)
-        if not df.empty:
-            st.write("Veri Başarıyla Yüklendi:")
-            st.table(df)
-        else:
-            st.warning("CSV dosyası mevcut ama içinde veri yok!")
-    except Exception as e:
-        st.error(f"Dosya okuma hatası: {e}")
+if os.path.exists(file_path):
+    df = pd.read_csv(file_path)
+    if not df.empty:
+        st.success("Veri başarıyla yüklendi!")
+        st.dataframe(df)
+    else:
+        st.warning("CSV dosyası boş görünüyor.")
 else:
-    st.error(f"Dosya bulunamadı: {os.path.abspath(csv_yolu)}")
-    st.write("Depodaki dosyalar:", os.listdir('.'))
+    st.error(f"Hata: Dosya bulunamadı! Aranan yol: {file_path}")
+    st.write("Mevcut dosyalar:", os.listdir('.'))
