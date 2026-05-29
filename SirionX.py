@@ -1,29 +1,30 @@
 import streamlit as st
 import pandas as pd
-import sqlite3
 import requests
+from bs4 import BeautifulSoup
 
-# Basit ve hatasız kütüphane kullanımı
-st.set_page_config(page_title="SirionX Core", layout="wide")
-st.title("🧠 SirionX - Otonom Analitik Beyin")
+st.title("🧠 SirionX - Veri Hattı Dedektörü")
 
-# Veritabanı bağlantısı
-def get_db():
-    conn = sqlite3.connect("sirionx_beyin.db")
-    return conn
-
-# Maçları çekme ve hata yönetimi
 def verileri_tazele():
     try:
-        # İddaa verisi veya API yerine daha kararlı bir yöntem: 
-        # Veri yoksa bile sistemin çökmesini engelle
-        st.info("Veri havuzu taranıyor...")
-        # (Buraya daha önce konuştuğumuz kazıyıcı entegre edilecek)
+        # İddaa bültenini doğrudan çekmek yerine daha genel bir spor kaynağı kullanalım
+        url = "https://www.mackolik.com/canli-sonuclar" # Alternatif en güvenilir kaynak
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, 'html.parser')
+            # Maç isimlerini çeken genel bir seçici
+            maclar = soup.find_all(class_='match-name') 
+            if maclar:
+                for m in maclar[:5]: # İlk 5 maçı göster
+                    st.write(f"✅ Bulunan Maç: {m.text.strip()}")
+            else:
+                st.warning("Sayfa yüklendi ama maç listesine ulaşılamadı. HTML yapısı değişmiş olabilir.")
+        else:
+            st.error(f"Bağlantı hatası: {response.status_code}")
     except Exception as e:
-        st.error(f"Sistem hatası: {e}")
+        st.error(f"Kritik Hata: {e}")
 
-# Arayüz
-if st.sidebar.button("Bülteni Yenile"):
+if st.button("Veri Hattını Zorla"):
     verileri_tazele()
-
-st.write("Sistem şu an stabil çalışıyor. Bültenin dolmasını bekliyoruz.")
