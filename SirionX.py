@@ -1,26 +1,36 @@
 import streamlit as st
-import requests
 import pandas as pd
+from playwright.sync_api import sync_playwright
 
-st.title("⚽ SirionX - Veri Dedektörü")
+st.set_page_config(page_title="SirionX - Otonom Bülten", layout="wide")
+st.title("⚽ SirionX - Kendi Bültenini Oluştur")
 
-# API Anahtarlarını buraya gir
-API_KEY = "buraya_kendi_anahtarini_yapistir"
-HEADERS = {
-    "x-rapidapi-key": API_KEY,
-    "x-rapidapi-host": "api-football-v1.p.rapidapi.com"
-}
+def bulten_kaziyici():
+    with st.spinner("Bülten taranıyor..."):
+        try:
+            with sync_playwright() as p:
+                browser = p.chromium.launch(headless=True)
+                page = browser.new_page()
+                # İddaa canlı futbol sayfasına git
+                page.goto("https://www.iddaa.com/program/canli/futbol", timeout=60000)
+                
+                # Sayfanın yüklenmesini bekle
+                page.wait_for_timeout(5000)
+                
+                # Verileri yakala (İddaa'nın CSS class isimlerine göre)
+                # Not: Bu class isimleri zamanla değişirse sayfayı inceleyip güncelleyeceğiz
+                maclar = page.query_selector_all(".match-name") 
+                data = [{"Maç": m.inner_text()} for m in maclar]
+                
+                browser.close()
+                return pd.DataFrame(data)
+        except Exception as e:
+            return f"Hata: {e}"
 
-def veri_test_et():
-    url = "https://api-football-v1.p.rapidapi.com/v3/fixtures"
-    querystring = {"live": "all"}
-    try:
-        response = requests.get(url, headers=HEADERS, params=querystring)
-        return response.json()
-    except Exception as e:
-        return f"Hata: {e}"
-
-if st.button("Veriyi Analiz Et"):
-    data = veri_test_et()
-    # Gelen ham veriyi ekranda görerek yapıyı teşhis edelim
-    st.json(data)
+if st.button("Her Sabah 10:00 Bültenini Çek"):
+    df = bulten_kaziyici()
+    if isinstance(df, pd.DataFrame) and not df.empty:
+        st.success("Bülten Başarıyla Çekildi!")
+        st.table(df)
+    else:
+        st.error("Veri alınamadı. İddaa sitesi bot korumasını sıkılaştırmış olabilir.")
