@@ -1,23 +1,36 @@
-name: Gunluk Bulten Cekici
+name: Gunluk Bulten
+
 on:
+  schedule:
+    - cron: '0 7 * * *'   # UTC 07:00 = Türkiye yaklaşık 10:00
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+
       - name: Paketleri Kur
-        run: pip install pandas requests beautifulsoup4
+        run: |
+          pip install pandas requests beautifulsoup4 lxml selenium webdriver-manager
+
       - name: Bülteni Çek
         run: python SirionX.py
-      - name: Git Kayıt
+
+      - name: Commit
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add maclar.csv
-          git commit -m "Veri guncellendi" || echo "Degisiklik yok"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add .
+          git commit -m "Gunluk bulten guncellendi" || echo "Degisiklik yok"
           git push
