@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
 
-st.title("⚽ SirionX - Analitik Terminal")
+st.title("⚽ SirionX - Otonom İddaa Analiz")
 
 try:
-    df = pd.read_csv("maclar.csv")
+    df = pd.read_csv("tahminler.csv")
     st.table(df)
 except:
-    st.warning("Henüz bülten çekilmedi. GitHub Actions'ı çalıştır.")
+    st.info("Analiz sonuçları bekleniyor... GitHub Actions'ı çalıştır.")
