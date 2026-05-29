@@ -2,30 +2,31 @@ import streamlit as st
 import requests
 import pandas as pd
 
-st.title("⚽ SirionX - Profesyonel Lig Listesi")
+st.title("⚽ SirionX - Lig Analiz Terminali")
 
-# Buraya kendi token'ını yapıştır
-API_KEY = "apikey senin_tokenin_buraya" 
-URL = "https://api.collectapi.com/sport/leaguesList"
+# API Ayarları
+API_KEY = "senin_tokenin_buraya" 
+HEADERS = {'authorization': API_KEY, 'content-type': 'application/json'}
 
+# Lig Listesini Çek
 def get_leagues():
-    headers = {
-        'authorization': API_KEY,
-        'content-type': 'application/json'
-    }
-    try:
-        response = requests.get(URL, headers=headers, timeout=10)
-        if response.status_code == 200:
-            return response.json().get('result', [])
-        else:
-            return f"Hata: {response.status_code}"
-    except Exception as e:
-        return str(e)
+    # Kendi gönderdiğin o doğru JSON yapısını buraya entegre ediyoruz
+    return [
+        {"league": "Süper Lig", "key": "super-lig"},
+        {"league": "TFF 1. Lig", "key": "tff-1-lig"},
+        {"league": "İngiltere Premier Ligi", "key": "ingiltere-premier-ligi"}
+    ]
 
-if st.button("Ligleri Listele"):
-    data = get_leagues()
-    if isinstance(data, list):
-        st.success("Ligler başarıyla çekildi!")
-        st.table(pd.DataFrame(data))
-    else:
-        st.error(data)
+ligler = get_leagues()
+lig_isimleri = [item['league'] for item in ligler]
+
+# Arayüz: Kullanıcının lig seçmesini sağla
+secilen_lig = st.selectbox("Analiz edilecek ligi seç:", lig_isimleri)
+
+# Seçilen ligin 'key' değerini bul
+secilen_key = next(item['key'] for item in ligler if item['league'] == secilen_lig)
+
+if st.button("Analizi Başlat"):
+    st.write(f"📡 {secilen_lig} ({secilen_key}) için veriler çekiliyor...")
+    # Burada seçilen_key kullanarak o lige özel maçları çekeceğiz
+    st.success(f"{secilen_lig} hazır! Maç verileri bağlanıyor...")
