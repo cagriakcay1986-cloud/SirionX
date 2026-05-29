@@ -1,24 +1,18 @@
-import streamlit as st
-import requests
 import pandas as pd
+import requests
 from bs4 import BeautifulSoup
 
-st.title("🧠 SirionX - Otonom Analitik Terminal")
+def bulten_cek():
+    url = "https://www.iddaa.com/program/canli/futbol"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    maclar = [{"mac": m.text.strip()} for m in soup.select(".match-name")]
+    
+    df = pd.DataFrame(maclar)
+    df.to_csv("maclar.csv", index=False)
+    print("Bülten çekildi ve kaydedildi.")
 
-def veri_cek():
-    try:
-        url = "https://www.iddaa.com/program/canli/futbol"
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        response = requests.get(url, headers=headers, timeout=10)
-        # Veri işleme mantığın burada olacak
-        return True
-    except Exception as e:
-        return e
-
-if st.button("Sistemi Senkronize Et"):
-    with st.spinner("Veri hattı kuruluyor..."):
-        sonuc = veri_cek()
-        if sonuc is True:
-            st.success("✅ Veri hattı hazır!")
-        else:
-            st.error(f"❌ Hata: {sonuc}")
+if __name__ == "__main__":
+    bulten_cek()
