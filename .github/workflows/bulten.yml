@@ -21,6 +21,6 @@ jobs:
         run: |
           git config --global user.name "SirionX-Bot"
           git config --global user.email "bot@sirionx.com"
-          git add maclar.csv
+          git add maclar.csv || true
           git commit -m "Bulten guncellendi" || echo "Degisiklik yok"
           git push
