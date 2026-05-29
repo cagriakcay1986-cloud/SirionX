@@ -1,21 +1,28 @@
 import streamlit as st
-import requests
 import pandas as pd
+import requests
 from bs4 import BeautifulSoup
 
-st.title("🧠 SirionX - Otonom Analitik")
+st.title("⚽ SirionX - Otonom İddaa Bülteni")
 
-def bulten_cek():
+def veriyi_cek():
+    url = "https://www.iddaa.com/program/canli/futbol"
+    headers = {"User-Agent": "Mozilla/5.0"}
     try:
-        url = "https://www.iddaa.com/program/canli/futbol"
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Veri çekme mantığın buraya gelecek
-        st.write("Veri hattı aktif.")
+        # İddaa'nın maç isimlerini tutan class yapısı
+        maclar = soup.select(".match-name") 
+        data = [{"Maç": m.text.strip()} for m in maclar]
+        
+        return pd.DataFrame(data)
     except Exception as e:
-        st.error(f"Hata: {e}")
+        return None
 
-if st.button("Sistemi Senkronize Et"):
-    bulten_cek()
+if st.button("Bülteni Çek"):
+    df = veriyi_cek()
+    if df is not None and not df.empty:
+        st.table(df)
+    else:
+        st.error("Veri çekilemedi. İddaa sitesi bot koruması uyguluyor olabilir.")
