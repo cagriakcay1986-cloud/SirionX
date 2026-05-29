@@ -1,32 +1,31 @@
 import streamlit as st
-import pandas as pd
 import requests
+import pandas as pd
 
-st.set_page_config(page_title="SirionX Live", layout="wide")
-st.title("⚽ SirionX v9.0 - Canlı Skor Motoru")
+st.title("⚽ SirionX - Profesyonel Lig Listesi")
 
-# SAHTE MAÇ ÜRETİMİNİ ENGELLEYEN YAPI
-def get_live_data():
-    # Bu API, dünyadaki maçları anlık olarak çeker
-    url = "https://livescore-football.p.rapidapi.com/soccer/livescores"
+# Buraya kendi token'ını yapıştır
+API_KEY = "apikey senin_tokenin_buraya" 
+URL = "https://api.collectapi.com/sport/leaguesList"
+
+def get_leagues():
     headers = {
-        "X-RapidAPI-Key": "SENIN_RAPIDAPI_KEYIN_BURAYA_GELECEK", # Burayı bir kez RapidAPI'den alıp girmelisin
-        "X-RapidAPI-Host": "livescore-football.p.rapidapi.com"
+        'authorization': API_KEY,
+        'content-type': 'application/json'
     }
     try:
-        response = requests.get(url, headers=headers, timeout=5)
+        response = requests.get(URL, headers=headers, timeout=10)
         if response.status_code == 200:
-            return response.json()
-        return None # Başarısızsa veri dönmez, sahte maç uydurmaz!
-    except:
-        return None
+            return response.json().get('result', [])
+        else:
+            return f"Hata: {response.status_code}"
+    except Exception as e:
+        return str(e)
 
-st.subheader("📡 Canlı Maçlar")
-data = get_live_data()
-
-if data:
-    st.write("Veri alındı, işleniyor...")
-    # Burada API'den gelen gerçek verileri tabloya dökeceğiz
-else:
-    st.error("🚨 Gerçek canlı veriye ulaşılamadı. Lütfen RapidAPI anahtarını tanımla veya yerel kurulum yap.")
-    st.info("Reis, bu noktada sahte maç görmemek için API anahtarı kullanman gerekiyor.")
+if st.button("Ligleri Listele"):
+    data = get_leagues()
+    if isinstance(data, list):
+        st.success("Ligler başarıyla çekildi!")
+        st.table(pd.DataFrame(data))
+    else:
+        st.error(data)
