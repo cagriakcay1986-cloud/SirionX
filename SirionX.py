@@ -1,30 +1,35 @@
 import pandas as pd
-import numpy as np
 import requests
 from bs4 import BeautifulSoup
+import os
 
-# 1. VERİ ÇEKME (Scraping)
 def bulten_cek():
+    # İddaa verisini çekmek için yapılandırılmış başlıklar
     url = "https://www.iddaa.com/program/canli/futbol"
-    headers = {"User-Agent": "Mozilla/5.0"}
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, 'html.parser')
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
     
-    # Maç isimlerini al
-    maclar = [{"mac": m.text.strip()} for m in soup.select(".match-name")]
-    
-    df = pd.DataFrame(maclar)
-    df.to_csv("maclar.csv", index=False)
-    return df
-
-# 2. ANALİZ MOTORU
-def analiz_et(df):
-    # Burada "Gerçek Veri" ile Poisson veya istatistiksel ağırlıklandırma yapacağız
-    # Şimdilik prototip olarak rastgele bir olasılık atıyoruz
-    df['Tahmin_Olasilik'] = np.random.uniform(60, 95, size=len(df)).round(2)
-    df.to_csv("tahminler.csv", index=False)
-    print("Analiz tamamlandı!")
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status() # Hata oluşursa yakala
+        
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Maç isimlerini çeken seçici (Bu seçici İddaa'nın yapısına göre güncel tutulmalı)
+        maclar_raw = soup.select(".match-name")
+        maclar = [{"mac": m.text.strip()} for m in maclar_raw]
+        
+        # Eğer maç bulunamazsa CSV'yi boş oluşturma
+        if maclar:
+            df = pd.DataFrame(maclar)
+            df.to_csv("maclar.csv", index=False)
+            print(f"Başarılı! {len(maclar)} maç kaydedildi.")
+        else:
+            print("Uyarı: Maç verisi bulunamadı, HTML yapısı değişmiş olabilir.")
+            
+    except Exception as e:
+        print(f"Hata oluştu: {e}")
 
 if __name__ == "__main__":
-    df = bulten_cek()
-    analiz_et(df)
+    bulten_cek()
