@@ -1,21 +1,24 @@
-import pandas as pd
+import streamlit as st
 import requests
+import pandas as pd
 from bs4 import BeautifulSoup
 
-def bulten_cek():
-    url = "https://www.iddaa.com/program/canli/futbol"
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"}
-    
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    
-    # İddaa'nın güncel HTML yapısına göre maçları seç
-    maclar = soup.select(".match-name") 
-    data = [{"mac": m.text.strip()} for m in maclar]
-    
-    df = pd.DataFrame(data)
-    df.to_csv("maclar.csv", index=False)
-    print("Bülten çekildi!")
+st.title("🧠 SirionX - Otonom Analitik Terminal")
 
-if __name__ == "__main__":
-    bulten_cek()
+def veri_cek():
+    try:
+        url = "https://www.iddaa.com/program/canli/futbol"
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        response = requests.get(url, headers=headers, timeout=10)
+        # Veri işleme mantığın burada olacak
+        return True
+    except Exception as e:
+        return e
+
+if st.button("Sistemi Senkronize Et"):
+    with st.spinner("Veri hattı kuruluyor..."):
+        sonuc = veri_cek()
+        if sonuc is True:
+            st.success("✅ Veri hattı hazır!")
+        else:
+            st.error(f"❌ Hata: {sonuc}")
