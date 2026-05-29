@@ -8,14 +8,14 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
       - name: Python Kur
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       - name: Paketleri Kur
-        run: |
-          pip install pandas requests beautifulsoup4
+        run: pip install pandas requests beautifulsoup4
       - name: Bülteni Çek
         run: python SirionX.py
       - name: Değişiklikleri Kaydet
