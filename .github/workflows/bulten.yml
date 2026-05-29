@@ -1,0 +1,27 @@
+name: Gunluk Bulten Cekici
+on:
+  schedule:
+    - cron: '0 7 * * *' # UTC 07:00, Türkiye saati ile 10:00'a denk gelir
+  workflow_dispatch: # Bunu ekliyoruz ki, istediğin zaman "Run workflow" butonuna basıp test edebilesin
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Python Kur
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Paketleri Kur
+        run: |
+          pip install pandas requests playwright
+          playwright install chromium
+      - name: Bülteni Çek
+        run: python SirionX.py # Burada çekme kodun olmalı
+      - name: Değişiklikleri Kaydet
+        run: |
+          git config --global user.name "SirionX-Bot"
+          git config --global user.email "bot@sirionx.com"
+          git add maclar.csv
+          git commit -m "Bulten guncellendi"
+          git push
