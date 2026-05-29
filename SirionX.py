@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import requests
-from bs4 import BeautifulSoup4
+from bs4 import BeautifulSoup
 
 # 1. VERİ ÇEKME (Scraping)
 def bulten_cek():
