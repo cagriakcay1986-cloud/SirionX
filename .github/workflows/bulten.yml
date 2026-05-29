@@ -2,12 +2,12 @@ name: Gunluk Bulten Cekici
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write  # BOTA YAZMA İZNİ VERİYORUZ
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      # GitHub'ın yeni zorunluluğu olan Node.js 24'ü kabul ediyoruz
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
