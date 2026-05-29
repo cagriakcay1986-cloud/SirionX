@@ -9,7 +9,7 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
       - name: Python Kur
         uses: actions/setup-python@v5
@@ -19,7 +19,7 @@ jobs:
         run: pip install pandas requests beautifulsoup4
       - name: Bülteni Çek
         run: python SirionX.py
-      - name: Git Ayarlari
+      - name: Değişiklikleri Kaydet
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
